@@ -1,0 +1,6 @@
+[package]
+name = "kitty-wonderlands"
+version = "0.1.0"
+authors = ["Jälv <thomas.montaigu@laposte.net>"]
+
+[dependencies]
