@@ -20,7 +20,19 @@ impl Kitty {
         self.mana
     }
 
+    pub fn mana_regen(&self) -> i32 {
+        self.mana_regen
+    }
+
+    pub fn decrease_mana(&mut self, dec : i32) {
+        self.mana -= dec;
+    }
+
     pub fn regen_mana(&mut self) {
         self.mana += self.mana_regen;
+    }
+
+    pub fn set_mana_regen(&mut self, new_value: i32) {
+        self.mana_regen = new_value;
     }
 }
