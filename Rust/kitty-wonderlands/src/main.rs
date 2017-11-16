@@ -15,9 +15,11 @@ fn regen_kittys_mana(kittys: &mut Vec<Kitty>) {
 fn game_loop() {
     let mut kittys = vec![Kitty::new(), Kitty::new()];
 
+
     loop {
-        regen_kittys_mana(&mut kittys);
-        unimplemented!();
+        for kitty in kittys.iter_mut() {
+            kitty.regen_mana();
+        }
     }
 }
 

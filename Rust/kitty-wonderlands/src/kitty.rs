@@ -1,30 +1,38 @@
-// Kittys are the players
+use card;
 
 pub struct Kitty {
-    health: i32,
-    mana: i32,
-    mana_regen: i32
+    health: u32,
+    mana: u32,
+    mana_regen: u32,
+    hand: Vec<Box<card::GameCard>>,
 }
 
 impl Kitty {
     pub fn new() -> Self {
-        Kitty{health: 50 , mana: 0, mana_regen: 1}
+        Kitty{health: 50 , mana: 0, mana_regen: 1, hand: Vec::<Box<card::GameCard>>::new()}
     }
 
-
-    pub fn health(&self) -> i32 {
+    pub fn health(&self) -> u32 {
         self.health
     }
 
-    pub fn mana(&self) -> i32 {
+    pub fn increase_health(&mut self, inc: u32) {
+        self.health += inc;
+    }
+
+    pub fn decrease_health(&mut self, dec: u32) {
+        self.health -= dec;
+    }
+
+    pub fn mana(&self) -> u32 {
         self.mana
     }
 
-    pub fn mana_regen(&self) -> i32 {
+    pub fn mana_regen(&self) -> u32 {
         self.mana_regen
     }
 
-    pub fn decrease_mana(&mut self, dec : i32) {
+    pub fn decrease_mana(&mut self, dec: u32) {
         self.mana -= dec;
     }
 
@@ -32,7 +40,11 @@ impl Kitty {
         self.mana += self.mana_regen;
     }
 
-    pub fn set_mana_regen(&mut self, new_value: i32) {
-        self.mana_regen = new_value;
+    pub fn increase_mana_regen(&mut self) {
+        self.mana_regen += 1;
+    }
+
+    pub fn decrease_mana_regen(&mut self) {
+        self.mana_regen -= 1;
     }
 }
