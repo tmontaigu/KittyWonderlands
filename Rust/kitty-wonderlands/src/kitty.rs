@@ -1,10 +1,12 @@
 use card;
+use deck;
 
 pub struct Kitty {
     health: u32,
     mana: u32,
     mana_regen: u32,
     hand: Vec<Box<card::GameCard>>,
+    deck: deck::Deck,
 }
 
 impl Kitty {
@@ -17,7 +19,8 @@ impl Kitty {
             health: health,
             mana: mana,
             mana_regen: mana_regen,
-            hand: Vec::<Box<card::GameCard>>::new()
+            hand: Vec::<card::BoxedCard>::new(),
+            deck: deck::Deck::new(),
         }
     }
 

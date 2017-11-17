@@ -8,6 +8,10 @@ pub enum CardError {
 
 pub type CardResult = Result<(), CardError>;
 
+pub type BoxedCard = Box<GameCard>;
+
+const rarity_sum:  u32 = 131;
+
 pub trait GameCard {
     fn name(&self) -> String;
     fn mana_cost(&self) -> u32;
@@ -96,7 +100,7 @@ fn consume_mana<T: GameCard>(card: &T, kitty: &mut Kitty) -> CardResult {
     Ok(())
 }
 
-fn kitty_think_action(card: &KittyCard, owner: &mut Kitty, enemy: &mut Kitty) -> CardResult{ //shall return a result
+fn kitty_think_action(card: &KittyCard, owner: &mut Kitty, enemy: &mut Kitty) -> CardResult{
     has_enough_mana(card, owner)?;
 
     owner.increase_mana_regen();
@@ -124,8 +128,7 @@ fn kitty_razor_action(card: &KittyCard, owner: &mut Kitty, enemy: &mut Kitty) ->
     has_enough_mana(card, owner)?;
 
     enemy.decrease_health(10);
-    owner.decrease_mana(card.mana_cost());
-    Ok(())
+    consume_mana(card, owner)
 }
 
 fn kitty_hell_is_others_action(card: &KittyCard, owner: &mut Kitty, enemy: &mut Kitty) -> CardResult {

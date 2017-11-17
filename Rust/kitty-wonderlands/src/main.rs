@@ -1,5 +1,6 @@
 mod kitty;
 mod card;
+mod deck;
 
 use kitty::Kitty;
 
