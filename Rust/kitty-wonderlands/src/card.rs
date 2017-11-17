@@ -91,12 +91,16 @@ fn has_enough_mana<T: GameCard>(card: &T, kitty: &Kitty) -> CardResult{
     Ok(())
 }
 
+fn consume_mana<T: GameCard>(card: &T, kitty: &mut Kitty) -> CardResult {
+    kitty.decrease_mana(card.mana_cost());
+    Ok(())
+}
+
 fn kitty_think_action(card: &KittyCard, owner: &mut Kitty, enemy: &mut Kitty) -> CardResult{ //shall return a result
     has_enough_mana(card, owner)?;
 
     owner.increase_mana_regen();
-    owner.decrease_mana(card.mana_cost());
-    Ok(())
+    consume_mana(card, owner)
 }
 
 fn kitty_steal_action(card: &KittyCard, owner: &mut Kitty, enemy: &mut Kitty) -> CardResult {
@@ -106,16 +110,14 @@ fn kitty_steal_action(card: &KittyCard, owner: &mut Kitty, enemy: &mut Kitty) ->
         enemy.decrease_mana_regen();
     }
     owner.increase_mana_regen();
-    owner.decrease_mana(10);
-    Ok(())
+    consume_mana(card, owner)
 }
 
 fn kitty_panacea_action(card: &KittyCard, owner: &mut Kitty, enemy: &mut Kitty) -> CardResult{
     has_enough_mana(card, owner)?;
 
     owner.increase_health(10);
-    owner.decrease_mana(card.mana_cost());
-    Ok(())
+    consume_mana(card, owner)
 }
 
 fn kitty_razor_action(card: &KittyCard, owner: &mut Kitty, enemy: &mut Kitty) -> CardResult {
@@ -123,7 +125,6 @@ fn kitty_razor_action(card: &KittyCard, owner: &mut Kitty, enemy: &mut Kitty) ->
 
     enemy.decrease_health(10);
     owner.decrease_mana(card.mana_cost());
-
     Ok(())
 }
 
@@ -131,8 +132,7 @@ fn kitty_hell_is_others_action(card: &KittyCard, owner: &mut Kitty, enemy: &mut 
     has_enough_mana(card, owner)?;
 
     enemy.decrease_health(u32::max_value());
-    owner.decrease_mana(card.mana_cost());
-    Ok(())
+    consume_mana(card, owner)
 }
 
 
