@@ -9,7 +9,16 @@ pub struct Kitty {
 
 impl Kitty {
     pub fn new() -> Self {
-        Kitty{health: 50 , mana: 0, mana_regen: 1, hand: Vec::<Box<card::GameCard>>::new()}
+        Kitty::new_with_stats(50, 0, 1)
+    }
+
+    pub fn new_with_stats(health: u32, mana: u32, mana_regen: u32) -> Self {
+        Kitty {
+            health: health,
+            mana: mana,
+            mana_regen: mana_regen,
+            hand: Vec::<Box<card::GameCard>>::new()
+        }
     }
 
     pub fn health(&self) -> u32 {
@@ -21,7 +30,7 @@ impl Kitty {
     }
 
     pub fn decrease_health(&mut self, dec: u32) {
-        self.health -= dec;
+        self.health = self.health.saturating_sub(dec);
     }
 
     pub fn mana(&self) -> u32 {
@@ -33,7 +42,7 @@ impl Kitty {
     }
 
     pub fn decrease_mana(&mut self, dec: u32) {
-        self.mana -= dec;
+        self.mana = self.mana.saturating_sub(dec);
     }
 
     pub fn regen_mana(&mut self) {

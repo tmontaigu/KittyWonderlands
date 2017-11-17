@@ -1,6 +1,7 @@
 use kitty::Kitty;
 
 #[derive(Debug)]
+#[derive(PartialEq)]
 pub enum CardError {
     OutOfMana,
 }
@@ -82,11 +83,16 @@ impl KittyCard {
     }
 }
 
-
-fn kitty_think_action(card: &KittyCard, owner: &mut Kitty, enemy: &mut Kitty) -> CardResult{ //shall return a result
-    if owner.mana() < card.mana_cost() {
+fn has_enough_mana<T: GameCard>(card: &T, kitty: &Kitty) -> CardResult{
+    if kitty.mana() < card.mana_cost() {
         return Err(CardError::OutOfMana);
     }
+
+    Ok(())
+}
+
+fn kitty_think_action(card: &KittyCard, owner: &mut Kitty, enemy: &mut Kitty) -> CardResult{ //shall return a result
+    has_enough_mana(card, owner)?;
 
     owner.increase_mana_regen();
     owner.decrease_mana(card.mana_cost());
@@ -94,11 +100,9 @@ fn kitty_think_action(card: &KittyCard, owner: &mut Kitty, enemy: &mut Kitty) ->
 }
 
 fn kitty_steal_action(card: &KittyCard, owner: &mut Kitty, enemy: &mut Kitty) -> CardResult {
-    if owner.mana() < card.mana_cost() {
-        return Err(CardError::OutOfMana);
-    }
+    has_enough_mana(card, owner)?;
 
-    if enemy.mana_regen() > 1 {
+    if enemy.mana_regen() >= 1 {
         enemy.decrease_mana_regen();
     }
     owner.increase_mana_regen();
@@ -107,9 +111,7 @@ fn kitty_steal_action(card: &KittyCard, owner: &mut Kitty, enemy: &mut Kitty) ->
 }
 
 fn kitty_panacea_action(card: &KittyCard, owner: &mut Kitty, enemy: &mut Kitty) -> CardResult{
-    if owner.mana() < card.mana_cost() {
-        return Err(CardError::OutOfMana);
-    }
+    has_enough_mana(card, owner)?;
 
     owner.increase_health(10);
     owner.decrease_mana(card.mana_cost());
@@ -117,9 +119,7 @@ fn kitty_panacea_action(card: &KittyCard, owner: &mut Kitty, enemy: &mut Kitty) 
 }
 
 fn kitty_razor_action(card: &KittyCard, owner: &mut Kitty, enemy: &mut Kitty) -> CardResult {
-    if owner.mana() < card.mana_cost() {
-        return Err(CardError::OutOfMana);
-    }
+    has_enough_mana(card, owner)?;
 
     enemy.decrease_health(10);
     owner.decrease_mana(card.mana_cost());
@@ -128,11 +128,117 @@ fn kitty_razor_action(card: &KittyCard, owner: &mut Kitty, enemy: &mut Kitty) ->
 }
 
 fn kitty_hell_is_others_action(card: &KittyCard, owner: &mut Kitty, enemy: &mut Kitty) -> CardResult {
-    if owner.mana() < card.mana_cost() {
-        return Err(CardError::OutOfMana);
-    }
+    has_enough_mana(card, owner)?;
 
     enemy.decrease_health(u32::max_value());
     owner.decrease_mana(card.mana_cost());
     Ok(())
+}
+
+
+
+#[cfg(test)]
+mod test {
+    use card;
+    use kitty::Kitty;
+    use card::GameCard;
+    use super::{KittyCard, CardError};
+
+    #[test]
+    fn test_kitty_think() {
+        let starting_mana: u32 = 5;
+        let starting_mana_regen: u32 = 1;
+
+        let mut k1 = Kitty::new_with_stats(50, starting_mana, starting_mana_regen);
+        let mut k2 = Kitty::new();
+
+        let k_think = KittyCard::KittyThink();
+        assert_eq!(Ok(()), k_think.activate(&mut k1, &mut k2));
+
+        assert_eq!(k1.mana(), starting_mana - k_think.mana_cost());
+        assert_eq!(k1.mana_regen(), starting_mana_regen + 1);
+    }
+
+    #[test]
+    fn test_kitty_think_oom() {
+        let mut k1 = Kitty::new_with_stats(50, 0, 1);
+        let mut k2 = Kitty::new();
+
+        let hellio = KittyCard::KittyThink();
+        assert_eq!(Err(CardError::OutOfMana), hellio.activate(&mut k1, &mut k2));
+    }
+
+
+    #[test]
+    fn test_steal() {
+        let starting_mana: u32 = 10;
+        let starting_mana_regen: u32 = 1;
+
+        let mut k1 = Kitty::new_with_stats(50, starting_mana, starting_mana_regen);
+        let mut k2 = Kitty::new_with_stats(50, starting_mana, 1);
+
+        let k_steal = KittyCard::KittySteal();
+
+        assert_eq!(Ok(()), k_steal.activate(&mut k1, &mut k2));
+
+        assert_eq!(k1.mana(), starting_mana - k_steal.mana_cost());
+        assert_eq!(k1.mana_regen(), starting_mana_regen + 1);
+        assert_eq!(k2.mana_regen(), 0);
+
+    }
+
+    #[test]
+    fn test_steal_oom() {
+        let mut k1 = Kitty::new_with_stats(50, 0, 1);
+        let mut k2 = Kitty::new();
+
+        let hellio = KittyCard::KittyThink();
+        assert_eq!(Err(CardError::OutOfMana), hellio.activate(&mut k1, &mut k2));
+    }
+
+
+    #[test]
+    fn test_panacea() {
+        let starting_mana: u32 = 10;
+        let starting_mana_regen: u32 = 1;
+
+        let mut k1 = Kitty::new_with_stats(50, starting_mana, starting_mana_regen);
+        let mut k2 = Kitty::new_with_stats(50, starting_mana, 1);
+
+        let k_panacea = KittyCard::KittyPanacea();
+
+        assert_eq!(Ok(()), k_panacea.activate(&mut k1, &mut k2));
+        assert_eq!(k1.mana(), starting_mana - k_panacea.mana_cost());
+        assert_eq!(k1.health(), 60);
+    }
+
+    #[test]
+    fn test_razor() {
+        let starting_mana: u32 = 10;
+        let starting_mana_regen: u32 = 1;
+
+        let mut k1 = Kitty::new_with_stats(50, starting_mana, starting_mana_regen);
+        let mut k2 = Kitty::new_with_stats(50, starting_mana, 1);
+
+        let k_razor = KittyCard::KittyRazor();
+
+        assert_eq!(Ok(()), k_razor.activate(&mut k1, &mut k2));
+        assert_eq!(k1.mana(), starting_mana - k_razor.mana_cost());
+        assert_eq!(k2.health(), 40);
+    }
+
+    #[test]
+    fn test_hell_is_others() {
+        let starting_mana: u32 = 100;
+        let starting_mana_regen: u32 = 1;
+
+        let mut k1 = Kitty::new_with_stats(50, starting_mana, starting_mana_regen);
+        let mut k2 = Kitty::new_with_stats(50, starting_mana, 1);
+
+        let k_hio = KittyCard::KittyHellIsOthers();
+
+        assert_eq!(Ok(()), k_hio.activate(&mut k1, &mut k2));
+        assert_eq!(k1.mana(), starting_mana - k_hio.mana_cost());
+        assert_eq!(k2.health(), 0);
+    }
 }
