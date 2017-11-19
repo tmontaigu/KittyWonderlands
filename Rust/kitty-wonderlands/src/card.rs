@@ -10,7 +10,7 @@ pub type CardResult = Result<(), CardError>;
 
 pub type BoxedCard = Box<GameCard>;
 
-const rarity_sum:  u32 = 131;
+pub const rarity_sum:  u32 = 131;
 
 pub trait GameCard {
     fn name(&self) -> String;

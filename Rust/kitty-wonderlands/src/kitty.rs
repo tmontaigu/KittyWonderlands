@@ -1,6 +1,10 @@
 use card;
 use deck;
 
+use rand;
+use rand::Rng;
+
+
 pub struct Kitty {
     health: u32,
     mana: u32,
@@ -8,6 +12,8 @@ pub struct Kitty {
     hand: Vec<Box<card::GameCard>>,
     deck: deck::Deck,
 }
+
+const max_cards_in_hand: u8 = 5;
 
 impl Kitty {
     pub fn new() -> Self {
@@ -58,5 +64,20 @@ impl Kitty {
 
     pub fn decrease_mana_regen(&mut self) {
         self.mana_regen -= 1;
+    }
+
+    pub fn create_deck(&mut self) {
+        self.deck.populate_deck();
+    }
+
+    pub fn fill_hand(&mut self) {
+        for _ in 0..(max_cards_in_hand as usize - self.hand.len()) {
+            self.hand.push(self.deck.pick_card().unwrap());
+        }
+    }
+
+    pub fn select_card(&mut self) -> &card::GameCard {
+        let n = rand::random::<u8>() % max_cards_in_hand;
+        &self.hand[n as usize]
     }
 }
